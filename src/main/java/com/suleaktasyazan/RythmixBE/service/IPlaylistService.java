@@ -1,7 +1,7 @@
 package com.suleaktasyazan.RythmixBE.service;
 
 import com.suleaktasyazan.RythmixBE.dto.DTOPlaylist;
-import com.suleaktasyazan.RythmixBE.dto.DTOSong;
+import com.suleaktasyazan.RythmixBE.dto.DTOPlaylistWithSongs;
 import com.suleaktasyazan.RythmixBE.entity.Playlist;
 
 import java.util.List;
@@ -14,6 +14,6 @@ public interface IPlaylistService {
     public Playlist createPlaylist(Playlist playlist);
 
 
-    public List<DTOSong> getSongsByPlaylistId(String id);
+    public DTOPlaylistWithSongs getSongsByPlaylistId(String id);
 
 }

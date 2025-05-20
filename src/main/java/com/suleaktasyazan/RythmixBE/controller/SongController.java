@@ -1,5 +1,6 @@
 package com.suleaktasyazan.RythmixBE.controller;
 
+import com.suleaktasyazan.RythmixBE.dto.DTOSong;
 import com.suleaktasyazan.RythmixBE.entity.Song;
 import com.suleaktasyazan.RythmixBE.service.ISongService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,16 @@ public class SongController {
     @PostMapping
     public Song createSong(@RequestBody Song song){
         return songService.createSong(song);
+    }
+
+    @PostMapping("/likeSong/{id}")
+    public Song likeSong(@PathVariable String id){
+        return songService.likeSong(id);
+    }
+
+    @GetMapping("/search")
+    public List<DTOSong> getFilteredSongs(@RequestParam(name = "filter") String query){
+        return songService.getFilteredSongs(query);
     }
 
 }

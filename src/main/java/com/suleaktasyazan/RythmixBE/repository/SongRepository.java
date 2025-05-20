@@ -15,5 +15,7 @@ public interface SongRepository  extends JpaRepository<Song,String> {
     @Query(value = "SELECT * FROM rythmix.song ORDER BY RANDOM() LIMIT 10", nativeQuery = true)
     List<Song> findRandom10Songs();
 
+    List<Song> findByNameContainingIgnoreCase(String query);
+
 
 }

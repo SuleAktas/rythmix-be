@@ -2,7 +2,7 @@ package com.suleaktasyazan.RythmixBE.controller;
 
 
 import com.suleaktasyazan.RythmixBE.dto.DTOPlaylist;
-import com.suleaktasyazan.RythmixBE.dto.DTOSong;
+import com.suleaktasyazan.RythmixBE.dto.DTOPlaylistWithSongs;
 import com.suleaktasyazan.RythmixBE.entity.Playlist;
 import com.suleaktasyazan.RythmixBE.service.IPlaylistService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,7 @@ public class PlaylistController {
 
 
     @GetMapping("/{id}/songs")
-    public List<DTOSong> getSongsByPlaylistId(@PathVariable String id){
+    public DTOPlaylistWithSongs getSongsByPlaylistId(@PathVariable String id){
         return playlistService.getSongsByPlaylistId(id);
     }
 

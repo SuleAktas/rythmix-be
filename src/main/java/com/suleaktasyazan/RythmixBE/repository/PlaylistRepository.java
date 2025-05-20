@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PlaylistRepository  extends JpaRepository<Playlist,String> {
@@ -16,5 +17,7 @@ public interface PlaylistRepository  extends JpaRepository<Playlist,String> {
 
     @Query("SELECT p.songs FROM Playlist p WHERE p.id = :playlistId")
     List<Song> findByPlaylistId(@Param("playlistId") String playlistId);
+
+    Optional<Playlist> findByTypeId(String typeId);
 
 }

@@ -1,27 +1,28 @@
 package com.suleaktasyazan.RythmixBE.service.impl;
 
 import com.suleaktasyazan.RythmixBE.dto.DTOPlaylist;
+import com.suleaktasyazan.RythmixBE.dto.DTOPlaylistWithSongs;
 import com.suleaktasyazan.RythmixBE.dto.DTOSong;
 import com.suleaktasyazan.RythmixBE.entity.Playlist;
 import com.suleaktasyazan.RythmixBE.entity.Song;
-import com.suleaktasyazan.RythmixBE.repository.PlaylistRepository;
-import com.suleaktasyazan.RythmixBE.repository.PlaylistTypeRepository;
-import com.suleaktasyazan.RythmixBE.repository.SingerRepository;
-import com.suleaktasyazan.RythmixBE.repository.SongRepository;
+import com.suleaktasyazan.RythmixBE.entity.User;
+import com.suleaktasyazan.RythmixBE.repository.*;
 import com.suleaktasyazan.RythmixBE.service.IPlaylistService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PlaylistServiceImpl implements IPlaylistService {
 
     @Autowired
     private PlaylistRepository playlistRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
 
     @Override
@@ -52,8 +53,25 @@ public class PlaylistServiceImpl implements IPlaylistService {
     }
 
     @Override
-    public List<DTOSong> getSongsByPlaylistId(String id) {
+    public DTOPlaylistWithSongs getSongsByPlaylistId(String id) {
+        DTOPlaylistWithSongs dtoPlaylistWithSongsList = new DTOPlaylistWithSongs();
+
         Optional<Playlist> playlist = playlistRepository.findById(id);
+
+        BeanUtils.copyProperties(playlist.get(),dtoPlaylistWithSongsList);
+
+
+        User user = userRepository.findFirstByOrderByIdAsc();
+
+        Set<String> likedSongIds = user.getLikedSongs().stream()
+                .map(Song::getId)
+                .collect(Collectors.toSet());
+
+        Set<String> likedPlaylistIds = user.getLikedPlaylists().stream()
+                .map(Playlist::getId)
+                .collect(Collectors.toSet());
+        dtoPlaylistWithSongsList.setIsLiked(likedPlaylistIds.contains(id));
+
         String singerName = "";
         String albumImage = "";
         if(playlist.isPresent()){
@@ -67,10 +85,15 @@ public class PlaylistServiceImpl implements IPlaylistService {
             BeanUtils.copyProperties(song,dtoSong);
             dtoSong.setAlbumImageUrl(albumImage);
             dtoSong.setSingerName(singerName);
+            dtoSong.setIsLiked(likedSongIds.contains(song.getId()));
             dtoSongList.add(dtoSong);
         }
-        return dtoSongList;
+        dtoPlaylistWithSongsList.setSingerName(singerName);
+        dtoPlaylistWithSongsList.setSongList(dtoSongList);
+        return dtoPlaylistWithSongsList;
+
     }
+
 
 
 }
