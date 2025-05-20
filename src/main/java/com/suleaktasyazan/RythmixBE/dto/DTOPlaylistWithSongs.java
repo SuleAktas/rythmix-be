@@ -5,26 +5,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DTOSong {
+public class DTOPlaylistWithSongs {
 
     private String id;
 
     private String name;
 
-    private Long duration;
-
     private String imageUrl;
-
-    private String audioUrl;
-
-    private String albumImageUrl;
 
     private String singerName;
 
     private Boolean isLiked;
+
+    List<DTOSong> songList;
 }
