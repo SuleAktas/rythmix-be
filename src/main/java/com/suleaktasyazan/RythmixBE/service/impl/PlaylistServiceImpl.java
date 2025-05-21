@@ -54,46 +54,63 @@ public class PlaylistServiceImpl implements IPlaylistService {
 
     @Override
     public DTOPlaylistWithSongs getSongsByPlaylistId(String id) {
-        DTOPlaylistWithSongs dtoPlaylistWithSongsList = new DTOPlaylistWithSongs();
+        DTOPlaylistWithSongs dto = new DTOPlaylistWithSongs();
+        Optional<Playlist> optionalPlaylist = playlistRepository.findById(id);
 
-        Optional<Playlist> playlist = playlistRepository.findById(id);
+        if (optionalPlaylist.isEmpty()) {
+            throw new NoSuchElementException("Playlist not found with id: " + id);
+        }
 
-        BeanUtils.copyProperties(playlist.get(),dtoPlaylistWithSongsList);
-
+        Playlist playlist = optionalPlaylist.get();
+        BeanUtils.copyProperties(playlist, dto);
 
         User user = userRepository.findFirstByOrderByIdAsc();
+        String typeId = playlist.getType().getId();
+        String singerName = playlist.getSinger().getName();
+        String albumImage = playlist.getImageUrl();
+
+        dto.setSingerName(singerName);
+
+        if (isLikedSongsPlaylist(typeId)) {
+            List<DTOSong> likedSongs = mapSongs(user.getLikedSongs(), true, albumImage);
+            dto.setSongList(likedSongs);
+            return dto;
+        }
+
+        dto.setIsLiked(user.getLikedPlaylists().stream()
+                .anyMatch(p -> p.getId().equals(id)));
 
         Set<String> likedSongIds = user.getLikedSongs().stream()
                 .map(Song::getId)
                 .collect(Collectors.toSet());
 
-        Set<String> likedPlaylistIds = user.getLikedPlaylists().stream()
-                .map(Playlist::getId)
-                .collect(Collectors.toSet());
-        dtoPlaylistWithSongsList.setIsLiked(likedPlaylistIds.contains(id));
+        List<Song> songs = playlistRepository.findByPlaylistId(id);
+        List<DTOSong> dtoSongs = songs.stream()
+                .map(song -> mapSong(song, likedSongIds.contains(song.getId()), albumImage))
+                .collect(Collectors.toList());
 
-        String singerName = "";
-        String albumImage = "";
-        if(playlist.isPresent()){
-            singerName = playlist.get().getSinger().getName();
-            albumImage = playlist.get().getImageUrl();
-        }
-        List<DTOSong> dtoSongList = new ArrayList<>();
-        List<Song> songList = playlistRepository.findByPlaylistId(id);
-        for(Song song : songList){
-            DTOSong dtoSong = new DTOSong();
-            BeanUtils.copyProperties(song,dtoSong);
-            dtoSong.setAlbumImageUrl(albumImage);
-            dtoSong.setSingerName(singerName);
-            dtoSong.setIsLiked(likedSongIds.contains(song.getId()));
-            dtoSongList.add(dtoSong);
-        }
-        dtoPlaylistWithSongsList.setSingerName(singerName);
-        dtoPlaylistWithSongsList.setSongList(dtoSongList);
-        return dtoPlaylistWithSongsList;
-
+        dto.setSongList(dtoSongs);
+        return dto;
     }
 
+    private boolean isLikedSongsPlaylist(String typeId) {
+        return "631422ff-9473-468d-b267-f63a5272181c".equals(typeId);
+    }
+
+    private List<DTOSong> mapSongs(Set<Song> songs, boolean isLiked, String albumImage) {
+        return songs.stream()
+                .map(song -> mapSong(song, isLiked, albumImage))
+                .collect(Collectors.toList());
+    }
+
+    private DTOSong mapSong(Song song, boolean isLiked, String albumImage) {
+        DTOSong dtoSong = new DTOSong();
+        BeanUtils.copyProperties(song, dtoSong);
+        dtoSong.setIsLiked(isLiked);
+        dtoSong.setAlbumImageUrl(albumImage);
+        dtoSong.setSingerName(song.getSinger().getName());
+        return dtoSong;
+    }
 
 
 }
